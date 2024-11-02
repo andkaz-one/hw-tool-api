@@ -13,7 +13,7 @@ export class AtStrategy extends PassportStrategy(Strategy, 'jwt-access') {
     constructor(private configService: ConfigService) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: configService.get<string>('AT_SECRET')
+            secretOrKey: 'at-secret'
         })
     }
 
