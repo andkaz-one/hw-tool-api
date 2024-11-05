@@ -43,7 +43,7 @@ export class AuthService {
     }
     
     //login
-    async login(dto: LoginDto): Promise<Tokens> {
+    async login(dto: LoginDto): Promise<any> {
         const user = await this.db.user.findUnique({
             where: {
                 email: dto.email
@@ -56,7 +56,7 @@ export class AuthService {
 
         const tokens = await this.signTokens(user.id, user.email)
         await this.updateRtHashOnUser(user.id, tokens.refresh_token);
-        return tokens;
+        return {tokens, user: {id: user.id, email: user.email, isAdmin: user.isAdmin, name: user.name}};
     }
     //logout
     async logout(userId: number) {

@@ -18,7 +18,7 @@ export class AuthController {
     //login
     @Post('login')
     @HttpCode(HttpStatus.OK)
-    async login(@Body() dto: LoginDto): Promise<Tokens> {
+    async login(@Body() dto: LoginDto): Promise<any> {
         return this.authService.login(dto);
     }
     //logout
