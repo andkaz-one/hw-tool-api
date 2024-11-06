@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { DbService } from 'src/db/db.service';
 import { LoginDto, RegisterDto } from './dto';
 import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Tokens } from './types';
 import { ConfigService } from '@nestjs/config';
 
@@ -23,6 +23,34 @@ export class AuthService {
             where: {id: userId},
             data: {hashedRt: hash}
         })
+    }
+
+    // user /me
+    async checkUser(userData: any): Promise<any> {
+
+        const user  = await this.db.user.findUnique({
+            where: {
+                id: userData.sub,
+                active: true
+            }
+        })
+       
+        if (userData.exp < Math.floor(Date.now() / 1000) && !user.hashedRt) {
+            throw new Error('Token expired of user not authorized.');
+        }
+
+        if (!user) {
+            throw new Error("User is not exist or not active activate user before using.");
+        }
+
+        const loggedUser = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin
+        }
+
+        return loggedUser;        
     }
 
     //register
@@ -71,6 +99,7 @@ export class AuthService {
                 hashedRt: null
             }
         })
+
     }
     
     //refreshRt
