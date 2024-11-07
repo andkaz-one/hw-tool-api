@@ -41,6 +41,7 @@ export class AuthController {
         return this.authService.refreshTokens(user['sub'], user['refreshToken']);
     }
 
+    //check user
     @UseGuards(AuthGuard('jwt-access'))
     @Get('me')
     @HttpCode(HttpStatus.OK)
