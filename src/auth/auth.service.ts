@@ -103,7 +103,33 @@ export class AuthService {
     }
     
     //refreshRt
-    async refreshTokens(userId: number, userRt: string) {
+    // async refreshTokens(userId: number, userRt: string) {
+    //     const user  = await this.db.user.findUnique({
+    //         where: {
+    //             id: userId
+    //         }
+    //     }) 
+
+    //     if (!user) throw new ForbiddenException('Access Denied');
+
+    //     const compareUserRt = await bcrypt.compare(userRt, user.hashedRt);
+
+    //     if (!compareUserRt) throw new ForbiddenException('Access Denied');
+
+    //     const tokens = await this.signTokens(user.id, user.email)
+    //     await this.updateRtHashOnUser(user.id, tokens.refresh_token);
+    //     return tokens;
+    // }
+
+    async refreshTokens(rt: string): Promise<Tokens>{
+        const decodedToken = await this.jwtService.verifyAsync(rt, {secret: 'rt-secret'}); // TODO change to ConfigService
+
+        if (!decodedToken) {
+            throw new ForbiddenException('Invalid token');
+        }
+ 
+        const userId = decodedToken?.sub
+
         const user  = await this.db.user.findUnique({
             where: {
                 id: userId
@@ -112,15 +138,14 @@ export class AuthService {
 
         if (!user) throw new ForbiddenException('Access Denied');
 
-        const compareUserRt = await bcrypt.compare(userRt, user.hashedRt);
+        const compareUserRt = await bcrypt.compare(rt, user.hashedRt);
 
         if (!compareUserRt) throw new ForbiddenException('Access Denied');
 
         const tokens = await this.signTokens(user.id, user.email)
         await this.updateRtHashOnUser(user.id, tokens.refresh_token);
-        return tokens;
+        return tokens;        
     }
-
 
     async signTokens(userId: number, email: string) {
         const [at, rt] = await Promise.all([
